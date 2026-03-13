@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora APTR - Rabia 2024</title>
+    <style>
+        :root {
+            --primary: #2196F3;
+            --success: #4CAF50;
+            --warning: #FF9800;
+            --danger: #F44336;
+            --bg: #F5F7FA;
+            --card: #FFFFFF;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        #app-container {
+            width: 100%;
+            max-width: 450px;
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 25px 20px;
+            text-align: center;
+        }
+
+        .step-indicator {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+
+        .content {
+            padding: 20px;
+            flex-grow: 1;
+        }
+
+        .screen { display: none; }
+        .active { display: block; }
+
+        .card {
+            background: var(--card);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #E0E0E0;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #CCC;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 16px; /* Evita zoom en iOS */
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        .btn-primary { background-color: var(--primary); }
+        .btn-success { background-color: var(--success); }
+        .btn-danger { background-color: var(--danger); }
+        .btn-back { background-color: #9E9E9E; }
+
+        .result-box {
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .especie-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .radio-btn {
+            border: 1px solid #DDD;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            background: white;
+        }
+
+        .radio-btn.selected {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+
+<div id="app-container">
+    <header>
+        <div id="header-title" style="font-size: 1.4rem; font-weight: bold;">APTR - Rabia</div>
+        <div id="header-step" class="step-indicator">Bienvenido</div>
+    </header>
+
+    <div class="content">
+        <div id="screen-welcome" class="screen active">
+            <div class="card" style="text-align: center;">
+                <h2 style="color: var(--primary)">Guía 2024</h2>
+                <p>Calculadora Institucional para la Clasificación de Exposición Rabiosa.</p>
+                <p style="font-size: 0.9rem; color: #666;">Basado en protocolos de Vigilancia de Salud Pública.</p>
+            </div>
+            <button class="btn btn-success" onclick="goTo('screen-patient')">INICIAR EVALUACIÓN</button>
+        </div>
+
+        <div id="screen-patient" class="screen">
+            <div class="card">
+                <label>Nombre del Paciente</label>
+                <input type="text" id="p-nombre" placeholder="Nombre completo">
+                <label>Fecha de Agresión</label>
+                <input type="date" id="p-fecha">
+            </div>
+            <button class="btn btn-primary" onclick="goTo('screen-species')">Siguiente</button>
+            <button class="btn btn-back" onclick="goTo('screen-welcome')">Atrás</button>
+        </div>
+
+        <div id="screen-species" class="screen">
+            <label>Seleccione la Especie Agresora:</label>
+            <div class="especie-grid" id="species-options">
+                </div>
+            <br>
+            <button class="btn btn-primary" onclick="handleSpeciesNext()">Siguiente</button>
+            <button class="btn btn-back" onclick="goTo('screen-patient')">Atrás</button>
+        </div>
+
+        <div id="screen-info" class="screen">
+            <div class="card">
+                <label>Condición del Animal</label>
+                <select id="a-ubicacion">
+                    <option value="Observable">Observable (Conocido)</option>
+                    <option value="Perdido">Perdido / Desconocido</option>
+                </select>
+                <label>¿Vacunado?</label>
+                <select id="a-vacuna">
+                    <option value="Si">Sí</option>
+                    <option value="No">No / Desconocido</option>
+                </select>
+            </div>
+            <button class="btn btn-primary" onclick="goTo('screen-lesion')">Siguiente</button>
+            <button class="btn btn-back" onclick="goTo('screen-species')">Atrás</button>
+        </div>
+
+        <div id="screen-lesion" class="screen">
+            <div class="card">
+                <label>Tipo de Lesión</label>
+                <select id="l-tipo">
+                    <option value="Unica">Única</option>
+                    <option value="Multiple">Múltiple</option>
+                    <option value="Lamedura">Lamedura mucosa / Arañazo</option>
+                </select>
+                <label>Profundidad</label>
+                <select id="l-profundidad">
+                    <option value="Superficial">Superficial</option>
+                    <option value="Profunda">Profunda</option>
+                </select>
+                <label>Localización</label>
+                <select id="l-sitio">
+                    <option value="">Seleccione...</option>
+                    <option value="1">Cabeza / Cara / Cuello</option>
+                    <option value="2">Manos / Dedos</option>
+                    <option value="3">Tronco</option>
+                    <option value="4">Miembros Superiores</option>
+                    <option value="5">Miembros Inferiores</option>
+                    <option value="6">Genitales</option>
+                </select>
+            </div>
+            <button class="btn btn-danger" onclick="calculate()">CALCULAR CONDUCTA</button>
+            <button class="btn btn-back" onclick="handleLesionBack()">Atrás</button>
+        </div>
+
+        <div id="screen-result" class="screen">
+            <div id="res-tipo" class="result-box"></div>
+            <div class="card">
+                <p id="res-conducta" style="white-space: pre-line;"></p>
+            </div>
+            <button class="btn btn-primary" onclick="location.reload()">NUEVA EVALUACIÓN</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let selectedSpecies = "1";
+    const speciesList = [
+        {id: "1", name: "Perro"}, {id: "2", name: "Gato"},
+        {id: "6", name: "Murciélago"}, {id: "7", name: "Zorro"},
+        {id: "8", name: "Mico"}, {id: "3", name: "Bovino"},
+        {id: "10", name: "Otros Silv."}
+    ];
+
+    // Inicializar fecha
+    document.getElementById('p-fecha').valueAsDate = new Date();
+
+    // Dibujar especies
+    const grid = document.getElementById('species-options');
+    speciesList.forEach(sp => {
+        const div = document.createElement('div');
+        div.className = `radio-btn ${sp.id === "1" ? 'selected' : ''}`;
+        div.innerText = sp.name;
+        div.onclick = () => {
+            document.querySelectorAll('.radio-btn').forEach(b => b.classList.remove('selected'));
+            div.classList.add('selected');
+            selectedSpecies = sp.id;
+        };
+        grid.appendChild(div);
+    });
+
+    function goTo(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+        
+        // Actualizar header
+        const steps = {
+            'screen-welcome': 'Bienvenido',
+            'screen-patient': 'Paso 1/5 - Paciente',
+            'screen-species': 'Paso 2/5 - Agresor',
+            'screen-info': 'Paso 3/5 - Estado',
+            'screen-lesion': 'Paso 4/5 - Lesión',
+            'screen-result': 'Paso 5/5 - Resultado'
+        };
+        document.getElementById('header-step').innerText = steps[screenId];
+    }
+
+    function handleSpeciesNext() {
+        if(selectedSpecies === "1" || selectedSpecies === "2") goTo('screen-info');
+        else goTo('screen-lesion');
+    }
+
+    function handleLesionBack() {
+        if(selectedSpecies === "1" || selectedSpecies === "2") goTo('screen-info');
+        else goTo('screen-species');
+    }
+
+    function calculate() {
+        const sitio = document.getElementById('l-sitio').value;
+        if(!sitio) { alert("Seleccione localización"); return; }
+
+        const ubicacion = document.getElementById('a-ubicacion').value;
+        const tipo = document.getElementById('l-tipo').value;
+        const prof = document.getElementById('l-profundidad').value;
+        
+        let clasificacion = "";
+        let conducta = "";
+        let color = "";
+
+        // LÓGICA EPIDEMIOLÓGICA
+        if (["6", "7", "8", "10"].includes(selectedSpecies)) {
+            clasificacion = "EXPOSICIÓN GRAVE";
+            conducta = "• Lavado con agua y jabón.\n• Aplicar Suero Antirrábico.\n• Vacunación (Días 0, 3, 7, 14).";
+            color = "var(--danger)";
+        } 
+        else if (selectedSpecies === "1" || selectedSpecies === "2") {
+            if (ubicacion === "Observable") {
+                clasificacion = "NO ES EXPOSICIÓN";
+                conducta = "• Lavado de la herida.\n• Observación por 10 días.\n• NO requiere suero ni vacuna.";
+                color = "var(--success)";
+            } else {
+                // Perdido
+                if (prof === "Superficial" && tipo === "Unica" && ["3", "4", "5"].includes(sitio)) {
+                    clasificacion = "EXPOSICIÓN LEVE";
+                    conducta = "• Lavado de la herida.\n• Vacunación (Días 0, 3, 7, 14).\n• NO requiere suero.";
+                    color = "var(--warning)";
+                } else {
+                    clasificacion = "EXPOSICIÓN GRAVE";
+                    conducta = "• Lavado exhaustivo.\n• Aplicar Suero Antirrábico.\n• Vacunación (Días 0, 3, 7, 14).";
+                    color = "var(--danger)";
+                }
+            }
+        } else {
+            clasificacion = "EXPOSICIÓN GRAVE";
+            conducta = "• Manejo según sospecha clínica.\n• Suero + Vacuna.";
+            color = "var(--danger)";
+        }
+
+        const resBox = document.getElementById('res-tipo');
+        resBox.innerText = clasificacion;
+        resBox.style.backgroundColor = color;
+        resBox.style.color = "white";
+        document.getElementById('res-conducta').innerText = conducta;
+        
+        goTo('screen-result');
+    }
+</script>
+
+</body>
+</html>

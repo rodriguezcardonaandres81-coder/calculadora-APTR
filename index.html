@@ -46,6 +46,13 @@
                 <input type="text" id="p-nombre" placeholder="Nombre completo">
                 <label>Fecha de Consulta</label>
                 <input type="date" id="p-fecha">
+                <label>Fecha del Evento (Agresión)</label>
+                <input type="date" id="p-evento">
+                <label>¿Vacunación Antirrábica Previa?</label>
+                <select id="p-vacuna-previa">
+                    <option value="No">No</option>
+                    <option value="Si">Si</option>
+                </select>
                 <label>¿Presenta Comorbilidad? (Inmunosupresión)</label>
                 <select id="p-comorbilidad">
                     <option value="2">No</option>
@@ -74,7 +81,6 @@
                     <option value="Muerto">Muerto</option>
                     <option value="Desconocido">Desconocido</option>
                 </select>
-
                 <div id="wrapper-condicion" style="display:none;">
                     <label>Condición del Animal</label>
                     <select id="a-ubicacion" onchange="handleAnimalLogic()">
@@ -83,7 +89,6 @@
                         <option value="Perdido">Perdido / Desconocido</option>
                     </select>
                 </div>
-
                 <div id="note-observable" class="info-note">
                     ⚠️ <b>Criterios de Observación:</b><br>
                     Solo si está en casco urbano, se conocen datos del dueño y un técnico de salud puede visitarlo.
@@ -95,16 +100,18 @@
 
         <div id="screen-lesion" class="screen">
             <div class="card">
-                <label>Tipo de Lesión</label>
+                <label>Tipo de Lesión / Contacto</label>
                 <select id="l-tipo">
-                    <option value="Unica">Única</option>
-                    <option value="Multiple">Múltiple</option>
-                    <option value="Lamedura">Lamedura mucosa / Arañazo</option>
+                    <option value="Unica">Mordedura Única</option>
+                    <option value="Multiple">Mordedura Múltiple</option>
+                    <option value="Arañazo">Arañazo</option>
+                    <option value="Lamedura">Lamedura mucosa</option>
+                    <option value="Contacto">Contacto sin lesión (Indirecto)</option>
                 </select>
                 <label>Profundidad</label>
                 <select id="l-profundidad">
                     <option value="Superficial">Superficial</option>
-                    <option value="Profunda">Profunda</option>
+                    <option value="Profunda">Profunda / Desgarro</option>
                 </select>
                 <label>Localización</label>
                 <select id="l-sitio">
@@ -156,6 +163,8 @@
     ];
 
     document.getElementById('p-fecha').valueAsDate = new Date();
+    document.getElementById('p-evento').valueAsDate = new Date();
+
     const grid = document.getElementById('species-options');
     speciesList.forEach(sp => {
         const div = document.createElement('div');
@@ -174,17 +183,12 @@
         const wrapperCondicion = document.getElementById('wrapper-condicion');
         const ubicacionSelect = document.getElementById('a-ubicacion');
         const nota = document.getElementById('note-observable');
-
         if (estado === "Vivo") {
             wrapperCondicion.style.display = "block";
-            // Solo mostrar nota si eligen Observable
             nota.style.display = (ubicacionSelect.value === "Observable") ? "block" : "none";
-        } else if (estado === "Muerto" || estado === "Desconocido") {
-            wrapperCondicion.style.display = "none";
-            ubicacionSelect.value = "Perdido"; // Forzamos el valor internamente
-            nota.style.display = "none";
         } else {
             wrapperCondicion.style.display = "none";
+            ubicacionSelect.value = (estado === "") ? "" : "Perdido";
             nota.style.display = "none";
         }
     }
@@ -192,10 +196,8 @@
     function validateInfoScreen() {
         const estado = document.getElementById('a-estado').value;
         const ubicacion = document.getElementById('a-ubicacion').value;
-
         if (!estado) { alert("Seleccione el estado del animal"); return; }
         if (estado === "Vivo" && !ubicacion) { alert("Seleccione la condición del animal"); return; }
-        
         goTo('screen-lesion');
     }
 
@@ -208,30 +210,28 @@
     function handleSpeciesNext() { (selectedSpecies === "1" || selectedSpecies === "2") ? goTo('screen-info') : goTo('screen-lesion'); }
     function handleLesionBack() { (selectedSpecies === "1" || selectedSpecies === "2") ? goTo('screen-info') : goTo('screen-species'); }
 
-    function formatDate(date) {
-        const d = new Date(date);
+    function formatDate(dateString) {
+        const d = new Date(dateString);
         d.setMinutes(d.getMinutes() + d.getTimezoneOffset());
         return d.toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' });
     }
 
-    function addDays(date, days) {
-        const result = new Date(date);
-        result.setMinutes(result.getMinutes() + result.getTimezoneOffset());
-        result.setDate(result.getDate() + days);
-        return formatDate(result);
+    function addDays(dateString, days) {
+        const d = new Date(dateString);
+        d.setMinutes(d.getMinutes() + d.getTimezoneOffset());
+        d.setDate(d.getDate() + days);
+        return d.toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' });
     }
 
     function calculate() {
         const sitio = document.getElementById('l-sitio').value;
         const peso = parseFloat(document.getElementById('p-peso').value);
-        const fechaBase = document.getElementById('p-fecha').value;
+        const fechaConsultaStr = document.getElementById('p-fecha').value;
+        const vacunadoPrevio = document.getElementById('p-vacuna-previa').value;
         const comorbilidad = document.getElementById('p-comorbilidad').value;
 
-        if(!sitio) { alert("Seleccione localización"); return; }
-        if(!fechaBase) { alert("Seleccione fecha de consulta"); return; }
-        if(isNaN(peso) || peso <= 0) { alert("Ingrese un peso válido"); return; }
+        if(!sitio || isNaN(peso) || !fechaConsultaStr){ alert("Complete los datos requeridos"); return; }
 
-        const ubicacion = (selectedSpecies === "1" || selectedSpecies === "2") ? document.getElementById('a-ubicacion').value : "Perdido";
         const tipo = document.getElementById('l-tipo').value;
         const prof = document.getElementById('l-profundidad').value;
         
@@ -239,50 +239,68 @@
         let requiereVacuna = false;
         let requiereSuero = false;
 
-        if (["6", "7", "8", "10"].includes(selectedSpecies)) {
+        if(tipo === "Contacto"){
+            expGrave = false; requiereVacuna = false; requiereSuero = false;
+        } else if(tipo === "Lamedura"){
             expGrave = true; requiereVacuna = true; requiereSuero = true;
-        } else if (selectedSpecies === "1" || selectedSpecies === "2") {
-            if (ubicacion === "Observable") {
+        } else if(["6","7","8","10"].includes(selectedSpecies)){
+            expGrave = true; requiereVacuna = true; requiereSuero = true;
+        } else if(selectedSpecies === "1" || selectedSpecies === "2"){
+            const ubicacion = document.getElementById('a-ubicacion').value;
+            if(ubicacion === "Observable"){
                 expGrave = false; requiereVacuna = false; requiereSuero = false;
             } else {
-                if (prof === "Superficial" && tipo === "Unica" && ["3", "4", "5"].includes(sitio)) {
+                if(prof === "Superficial" && tipo === "Arañazo" && ["3","4","5"].includes(sitio)){
                     expGrave = false; requiereVacuna = true; requiereSuero = false;
                 } else {
                     expGrave = true; requiereVacuna = true; requiereSuero = true;
                 }
             }
-        } else { expGrave = true; requiereVacuna = true; requiereSuero = true; }
+        } else {
+            expGrave = true; requiereVacuna = true; requiereSuero = true;
+        }
+
+        // AJUSTE VACUNACIÓN PREVIA: Solo omite suero, pero vacuna se mantiene
+        if(vacunadoPrevio === "Si"){ requiereSuero = false; requiereVacuna = true; }
 
         const resBox = document.getElementById('res-tipo');
-        if (requiereVacuna) {
+        if(requiereVacuna){
             resBox.innerText = expGrave ? "EXPOSICIÓN GRAVE" : "EXPOSICIÓN LEVE";
             resBox.style.backgroundColor = expGrave ? "var(--danger)" : "var(--warning)";
             document.getElementById('card-vacunacion').style.display = "block";
-            
-            let htmlFechas = `<tr><td>Dosis 0:</td><td class="bold">${formatDate(fechaBase)}</td></tr>
-                              <tr><td>Dosis 3:</td><td class="bold">${addDays(fechaBase, 3)}</td></tr>
-                              <tr><td>Dosis 7:</td><td class="bold">${addDays(fechaBase, 7)}</td></tr>
-                              <tr><td>Dosis 14:</td><td class="bold">${addDays(fechaBase, 14)}</td></tr>`;
-            if (comorbilidad === "1") htmlFechas += `<tr><td>Dosis 21 (Inmuno):</td><td class="bold">${addDays(fechaBase, 21)}</td></tr>`;
+
+            let htmlFechas = "";
+            if(vacunadoPrevio === "Si"){
+                htmlFechas = `<tr><td>Dosis 0:</td><td class="bold">${formatDate(fechaConsultaStr)}</td></tr>
+                              <tr><td>Dosis 3:</td><td class="bold">${addDays(fechaConsultaStr, 3)}</td></tr>`;
+            } else {
+                htmlFechas = `<tr><td>Dosis 0:</td><td class="bold">${formatDate(fechaConsultaStr)}</td></tr>
+                              <tr><td>Dosis 3:</td><td class="bold">${addDays(fechaConsultaStr, 3)}</td></tr>
+                              <tr><td>Dosis 7:</td><td class="bold">${addDays(fechaConsultaStr, 7)}</td></tr>
+                              <tr><td>Dosis 14:</td><td class="bold">${addDays(fechaConsultaStr, 14)}</td></tr>`;
+                if(comorbilidad === "1") htmlFechas += `<tr><td>Dosis 21:</td><td class="bold">${addDays(fechaConsultaStr, 21)}</td></tr>`;
+            }
             document.getElementById('tabla-fechas').innerHTML = htmlFechas;
         } else {
-            resBox.innerText = "NO ES EXPOSICIÓN";
+            resBox.innerText = "NO EXPOSICIÓN";
             resBox.style.backgroundColor = "var(--success)";
             document.getElementById('card-vacunacion').style.display = "none";
         }
 
-        if (requiereSuero) {
+        if(requiereSuero){
             document.getElementById('card-suero').style.display = "block";
             const uiTotal = peso * 40;
             const frascos = Math.ceil(uiTotal / 1000);
             document.getElementById('suero-ui').innerText = uiTotal + " UI";
-            document.getElementById('suero-frascos').innerText = frascos + " Frascos";
+            document.getElementById('suero-frascos').innerText = frascos + " frascos";
         } else {
             document.getElementById('card-suero').style.display = "none";
         }
 
-        document.getElementById('res-conducta').innerText = expGrave ? "• Suero + Vacuna esquema completo.\n• Lavado exhaustivo de herida." : (requiereVacuna ? "• Vacunación esquema completo.\n• No requiere suero." : "• Observación del animal por 10 días.\n• Lavado de herida.");
-        
+        document.getElementById('res-conducta').innerText = expGrave ? 
+            "• TRATAMIENTO INICIAL: Suero + Vacuna (Dosis 0).\n• IMPORTANTE: El paciente DEBE regresar para completar todas las dosis programadas.\n• Lavado exhaustivo de herida con agua y jabón." : 
+            (requiereVacuna ? "• Iniciar esquema de vacunación hoy.\n• Garantizar cumplimiento de las dosis 3, 7 y 14." : "• Observación del animal por 10 días.\n• Si el animal muere o desaparece, iniciar vacunación de inmediato.");
+
         goTo('screen-result');
     }
 
@@ -290,16 +308,11 @@
         const nombre = document.getElementById('p-nombre').value || "No registrado";
         const clasificacion = document.getElementById('res-tipo').innerText;
         const animal = speciesList.find(s => s.id === selectedSpecies).name;
-        const suero = document.getElementById('card-suero').style.display === "block" ? `\n*Suero:* ${document.getElementById('suero-ui').innerText} (${document.getElementById('suero-frascos').innerText} frascos)` : "";
-        
-        let fechas = "\n*Cronograma Vacunas:*";
-        document.querySelectorAll('#tabla-fechas tr').forEach(tr => {
-            fechas += `\n- ${tr.innerText.replace('\t', ': ')}`;
-        });
-
+        const suero = document.getElementById('card-suero').style.display === "block" ? `\n*Suero:* ${document.getElementById('suero-ui').innerText}` : "";
+        let fechas = "\n*Cronograma:*";
+        document.querySelectorAll('#tabla-fechas tr').forEach(tr => { fechas += `\n- ${tr.innerText.replace('\t', ': ')}`; });
         const phone = "573116366677"; 
-        const mensaje = `*REPORTE%20EPIDEMIOLÓGICO*%0A*Paciente:*%20${nombre}%0A*Agresor:*%20${animal}%0A*Clasificación:*%20${clasificacion}${suero}${fechas}%0A%0A_Generado%20por:%20Andres%20Rodriguez_`;
-        
+        const mensaje = `*REPORTE%20EPIDEMIOLÓGICO*%0A*Paciente:*%20${nombre}%0A*Agresor:*%20${animal}%0A*Clasificación:*%20${clasificacion}${suero}${fechas}%0A%0A_Aviso:%20Garantizar%20esquema%20completo_`;
         window.open(`https://wa.me/${phone}?text=${mensaje}`, '_blank');
     }
 </script>

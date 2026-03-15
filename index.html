@@ -26,7 +26,7 @@
         .radio-btn.selected { background: var(--primary); color: white; border-color: var(--primary); }
         .tratamiento-tabla { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem; }
         .tratamiento-tabla td { padding: 8px; border-bottom: 1px solid #EEE; }
-        .tratamiento-tabla tr:last-child td { border: none; }
+        .info-note { background: #e3f2fd; padding: 10px; border-radius: 8px; font-size: 0.85rem; color: #1565c0; border-left: 4px solid #2196F3; margin-top: -10px; margin-bottom: 15px; display: none; }
         .bold { font-weight: bold; color: #333; }
         footer { text-align: center; padding: 15px; font-size: 0.85rem; color: #777; border-top: 1px solid #EEE; margin-top: auto; line-height: 1.4; }
     </style>
@@ -68,10 +68,13 @@
         <div id="screen-info" class="screen">
             <div class="card">
                 <label>Condición del Animal</label>
-                <select id="a-ubicacion">
+                <select id="a-ubicacion" onchange="toggleNote()">
                     <option value="Observable">Observable (Conocido)</option>
                     <option value="Perdido">Perdido / Desconocido</option>
                 </select>
+                <div id="note-observable" class="info-note">
+                    ⚠️ <b>Nota:</b> Solo si está en casco urbano, se conocen datos del dueño y un técnico puede visitarlo.
+                </div>
             </div>
             <button class="btn btn-primary" onclick="goTo('screen-lesion')">Siguiente</button>
             <button class="btn btn-back" onclick="goTo('screen-species')">Atrás</button>
@@ -157,6 +160,13 @@
         grid.appendChild(div);
     });
 
+    function toggleNote() {
+        const val = document.getElementById('a-ubicacion').value;
+        document.getElementById('note-observable').style.display = (val === "Observable") ? "block" : "none";
+    }
+    // Inicializar nota
+    toggleNote();
+
     function goTo(screenId) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.getElementById(screenId).classList.add('active');
@@ -181,12 +191,13 @@
 
     function calculate() {
         const sitio = document.getElementById('l-sitio').value;
-        const peso = document.getElementById('p-peso').value;
+        const peso = parseFloat(document.getElementById('p-peso').value);
         const fechaBase = document.getElementById('p-fecha').value;
         const comorbilidad = document.getElementById('p-comorbilidad').value;
 
         if(!sitio) { alert("Seleccione localización"); return; }
         if(!fechaBase) { alert("Seleccione fecha de consulta"); return; }
+        if(isNaN(peso) || peso <= 0) { alert("Ingrese un peso válido para calcular dosis de suero."); return; }
 
         const ubicacion = document.getElementById('a-ubicacion').value;
         const tipo = document.getElementById('l-tipo').value;
@@ -196,7 +207,6 @@
         let requiereVacuna = false;
         let requiereSuero = false;
 
-        // LÓGICA DE CLASIFICACIÓN
         if (["6", "7", "8", "10"].includes(selectedSpecies)) {
             expGrave = true; requiereVacuna = true; requiereSuero = true;
         } else if (selectedSpecies === "1" || selectedSpecies === "2") {
@@ -211,20 +221,18 @@
             }
         } else { expGrave = true; requiereVacuna = true; requiereSuero = true; }
 
-        // MOSTRAR RESULTADOS
         const resBox = document.getElementById('res-tipo');
         if (requiereVacuna) {
             resBox.innerText = expGrave ? "EXPOSICIÓN GRAVE" : "EXPOSICIÓN LEVE";
             resBox.style.backgroundColor = expGrave ? "var(--danger)" : "var(--warning)";
             document.getElementById('card-vacunacion').style.display = "block";
             
-            // Tabla de fechas
             let htmlFechas = `<tr><td>Dosis 0:</td><td class="bold">${formatDate(fechaBase)}</td></tr>
                               <tr><td>Dosis 3:</td><td class="bold">${addDays(fechaBase, 3)}</td></tr>
                               <tr><td>Dosis 7:</td><td class="bold">${addDays(fechaBase, 7)}</td></tr>
                               <tr><td>Dosis 14:</td><td class="bold">${addDays(fechaBase, 14)}</td></tr>`;
             if (comorbilidad === "1") {
-                htmlFechas += `<tr><td>Dosis 21 (Comorb):</td><td class="bold">${addDays(fechaBase, 21)}</td></tr>`;
+                htmlFechas += `<tr><td>Dosis 21 (Inmuno):</td><td class="bold">${addDays(fechaBase, 21)}</td></tr>`;
             }
             document.getElementById('tabla-fechas').innerHTML = htmlFechas;
         } else {
@@ -233,8 +241,7 @@
             document.getElementById('card-vacunacion').style.display = "none";
         }
 
-        // Suero
-        if (requiereSuero && peso > 0) {
+        if (requiereSuero) {
             document.getElementById('card-suero').style.display = "block";
             const uiTotal = peso * 40;
             const frascos = Math.ceil(uiTotal / 1000);

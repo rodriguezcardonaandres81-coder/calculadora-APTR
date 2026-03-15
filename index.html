@@ -1,3 +1,6 @@
+Aquí tienes el script completo y corregido. He ajustado la función goTo y el evento onchange para que, en cuanto pases a la pantalla de condición del animal, la nota se active automáticamente al estar marcada la opción "Observable".
+
+HTML
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -26,7 +29,7 @@
         .radio-btn.selected { background: var(--primary); color: white; border-color: var(--primary); }
         .tratamiento-tabla { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem; }
         .tratamiento-tabla td { padding: 8px; border-bottom: 1px solid #EEE; }
-        .info-note { background: #e3f2fd; padding: 10px; border-radius: 8px; font-size: 0.85rem; color: #1565c0; border-left: 4px solid #2196F3; margin-top: -10px; margin-bottom: 15px; display: none; }
+        .info-note { background: #FFF9C4; padding: 12px; border-radius: 8px; font-size: 0.85rem; color: #856404; border-left: 5px solid #FBC02D; margin-top: -5px; margin-bottom: 15px; display: none; line-height: 1.3; }
         .bold { font-weight: bold; color: #333; }
         footer { text-align: center; padding: 15px; font-size: 0.85rem; color: #777; border-top: 1px solid #EEE; margin-top: auto; line-height: 1.4; }
     </style>
@@ -73,7 +76,8 @@
                     <option value="Perdido">Perdido / Desconocido</option>
                 </select>
                 <div id="note-observable" class="info-note">
-                    ⚠️ <b>Nota:</b> Solo si está en casco urbano, se conocen datos del dueño y un técnico puede visitarlo.
+                    ⚠️ <b>Criterios de Observación:</b><br>
+                    Solo si está en casco urbano, se conocen datos del dueño y un técnico de salud puede visitarlo.
                 </div>
             </div>
             <button class="btn btn-primary" onclick="goTo('screen-lesion')">Siguiente</button>
@@ -161,15 +165,21 @@
     });
 
     function toggleNote() {
-        const val = document.getElementById('a-ubicacion').value;
-        document.getElementById('note-observable').style.display = (val === "Observable") ? "block" : "none";
+        const select = document.getElementById('a-ubicacion');
+        const note = document.getElementById('note-observable');
+        if(select && note) {
+            note.style.display = (select.value === "Observable") ? "block" : "none";
+        }
     }
-    // Inicializar nota
-    toggleNote();
 
     function goTo(screenId) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.getElementById(screenId).classList.add('active');
+        
+        // Al entrar a la pantalla info, verificamos si mostrar la nota
+        if(screenId === 'screen-info') {
+            toggleNote();
+        }
         window.scrollTo(0,0);
     }
 
@@ -197,9 +207,9 @@
 
         if(!sitio) { alert("Seleccione localización"); return; }
         if(!fechaBase) { alert("Seleccione fecha de consulta"); return; }
-        if(isNaN(peso) || peso <= 0) { alert("Ingrese un peso válido para calcular dosis de suero."); return; }
+        if(isNaN(peso) || peso <= 0) { alert("Ingrese un peso válido para calcular el suero."); return; }
 
-        const ubicacion = document.getElementById('a-ubicacion').value;
+        const ubicacion = (selectedSpecies === "1" || selectedSpecies === "2") ? document.getElementById('a-ubicacion').value : "Desconocido";
         const tipo = document.getElementById('l-tipo').value;
         const prof = document.getElementById('l-profundidad').value;
         
@@ -268,7 +278,7 @@
         });
 
         const phone = "573116366677"; 
-        const mensaje = `*REPORTE EPIDEMIOLÓGICO*%0A*Paciente:* ${nombre}%0A*Agresor:* ${animal}%0A*Clasificación:* ${clasificacion}${suero}${fechas}%0A%0A_Generado por: Andres Rodriguez_`;
+        const mensaje = `*REPORTE%20EPIDEMIOLÓGICO*%0A*Paciente:*%20${nombre}%0A*Agresor:*%20${animal}%0A*Clasificación:*%20${clasificacion}${suero}${fechas}%0A%0A_Generado%20por:%20Andres%20Rodriguez_`;
         
         window.open(`https://wa.me/${phone}?text=${mensaje}`, '_blank');
     }

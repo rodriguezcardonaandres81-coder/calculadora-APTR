@@ -25,6 +25,10 @@
         .radio-btn { border: 1px solid #DDD; padding: 10px; border-radius: 8px; text-align: center; cursor: pointer; background: white; }
         .radio-btn.selected { background: var(--primary); color: white; border-color: var(--primary); }
         .info-note { background: #FFF9C4; padding: 12px; border-radius: 8px; font-size: 0.85rem; color: #856404; border-left: 5px solid #FBC02D; margin-top: -5px; margin-bottom: 15px; display: none; line-height: 1.3; }
+        
+        /* Estilo para la nota de Tétanos */
+        .tetanos-note { background: #E3F2FD; padding: 15px; border-radius: 8px; font-size: 0.85rem; color: #0D47A1; border-left: 5px solid #2196F3; line-height: 1.4; margin-top: 10px; }
+        
         .tratamiento-tabla { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem; }
         .tratamiento-tabla td { padding: 8px; border-bottom: 1px solid #EEE; }
         .bold { font-weight: bold; color: #333; }
@@ -123,10 +127,12 @@
 
         <div id="screen-result" class="screen">
             <div id="res-tipo" class="result-box"></div>
+            
             <div class="card" id="card-vacunacion">
                 <label style="color: var(--primary); border-bottom: 1px solid #EEE; padding-bottom: 5px;">Esquema de Vacunación</label>
                 <table class="tratamiento-tabla" id="tabla-fechas"></table>
             </div>
+
             <div class="card" id="card-suero" style="display:none;">
                 <label style="color: var(--danger); border-bottom: 1px solid #EEE; padding-bottom: 5px;">Suero Antirrábico</label>
                 <table class="tratamiento-tabla">
@@ -134,7 +140,19 @@
                     <tr><td>Frascos (1000 UI):</td><td class="bold" id="suero-frascos">--</td></tr>
                 </table>
             </div>
-            <div class="card"><p id="res-conducta" style="white-space: pre-line; font-size: 0.9rem;"></p></div>
+
+            <div class="card">
+                <p id="res-conducta" style="white-space: pre-line; font-size: 0.9rem; margin-bottom: 15px;"></p>
+                
+                <div class="tetanos-note">
+                    <b style="text-transform: uppercase;">💉 Prevención de Tétanos:</b><br>
+                    • <b>Refuerzo:</b> En heridas sucias si pasaron >5 años; en limpias si pasaron >10 años.<br>
+                    • <b>Sin esquema/Desconocido:</b> Aplicar 3 dosis (día 0, mes y 6 meses).<br>
+                    • <b>Gestantes >20 sem:</b> Vacunar con <b>Tdap</b> (si no la ha recibido).<br>
+                    • <b>Gestantes <20 sem:</b> Recibir <b>Td</b> (Tétanos y Difteria).
+                </div>
+            </div>
+
             <button class="btn btn-success" onclick="sendWhatsApp()">ENVIAR REPORTE COMPLETO</button>
             <button class="btn btn-primary" onclick="location.reload()">NUEVA EVALUACIÓN</button>
         </div>
@@ -177,14 +195,10 @@
 
         if (estado === "Vivo") {
             wrapperCondicion.style.display = "block";
-            // Solo mostrar nota si eligen Observable
             nota.style.display = (ubicacionSelect.value === "Observable") ? "block" : "none";
-        } else if (estado === "Muerto" || estado === "Desconocido") {
-            wrapperCondicion.style.display = "none";
-            ubicacionSelect.value = "Perdido"; // Forzamos el valor internamente
-            nota.style.display = "none";
         } else {
             wrapperCondicion.style.display = "none";
+            ubicacionSelect.value = "Perdido";
             nota.style.display = "none";
         }
     }
@@ -192,10 +206,8 @@
     function validateInfoScreen() {
         const estado = document.getElementById('a-estado').value;
         const ubicacion = document.getElementById('a-ubicacion').value;
-
         if (!estado) { alert("Seleccione el estado del animal"); return; }
         if (estado === "Vivo" && !ubicacion) { alert("Seleccione la condición del animal"); return; }
-        
         goTo('screen-lesion');
     }
 
@@ -297,8 +309,11 @@
             fechas += `\n- ${tr.innerText.replace('\t', ': ')}`;
         });
 
+        // Agregando nota de tétanos al mensaje de WhatsApp
+        const notaTetanos = `%0A%0A*RECOMENDACIÓN TÉTANOS:*%0A- Valorar dosis de refuerzo (>5 años herida sucia, >10 años limpia).%0A- En gestantes >20 sem: Tdap.`;
+
         const phone = "573116366677"; 
-        const mensaje = `*REPORTE%20EPIDEMIOLÓGICO*%0A*Paciente:*%20${nombre}%0A*Agresor:*%20${animal}%0A*Clasificación:*%20${clasificacion}${suero}${fechas}%0A%0A_Generado%20por:%20Andres%20Rodriguez_`;
+        const mensaje = `*REPORTE%20EPIDEMIOLÓGICO*%0A*Paciente:*%20${nombre}%0A*Agresor:*%20${animal}%0A*Clasificación:*%20${clasificacion}${suero}${fechas}${notaTetanos}%0A%0A_Generado%20por:%20Andres%20Rodriguez_`;
         
         window.open(`https://wa.me/${phone}?text=${mensaje}`, '_blank');
     }

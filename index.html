@@ -6,11 +6,11 @@
     <title>MEISTER - Vigilancia de Rabia | Andres Rodriguez Cardona</title>
     <style>
         :root { 
-            --primary: #1A237E; /* Navy Deep - Autoridad */
-            --accent: #2196F3;  /* Blue - Acción */
-            --success: #2E7D32; /* Green - Seguro */
-            --warning: #F57C00; /* Orange - Precaución */
-            --danger: #C62828;  /* Red - Grave */
+            --primary: #1A237E; 
+            --accent: #2196F3;  
+            --success: #2E7D32; 
+            --warning: #F57C00; 
+            --danger: #C62828;  
             --bg: #F0F2F5; 
             --card: #FFFFFF; 
             --text-main: #333;
@@ -23,7 +23,6 @@
         
         header { background-color: var(--primary); color: white; padding: 20px; text-align: center; border-bottom: 4px solid var(--accent); }
         
-        /* Icono Zoonosis Minimalista */
         .zoonosis-icon { margin-bottom: 10px; opacity: 0.9; }
         
         .content { padding: 15px 20px; flex-grow: 1; }
@@ -43,8 +42,6 @@
         .btn:active { transform: translateY(1px); }
         
         .btn-primary { background-color: var(--accent); }
-        .btn-primary:hover { background-color: #1976D2; }
-        
         .btn-success { background-color: var(--success); }
         .btn-danger { background-color: var(--danger); }
         .btn-back { background-color: #757575; margin-top: 5px; }
@@ -57,16 +54,13 @@
         
         .info-note { background: #FFFDE7; padding: 12px; border-radius: 8px; font-size: 0.8rem; color: #7F0000; border-left: 4px solid #FBC02D; margin-top: -10px; margin-bottom: 15px; display: none; line-height: 1.4; }
         
-        /* Nota de Tétanos Refinada */
         .tetanos-note { background: #E8EAF6; padding: 15px; border-radius: 8px; font-size: 0.8rem; color: #1A237E; border-left: 4px solid var(--primary); line-height: 1.5; margin-top: 10px; }
-        .tetanos-note b { color: var(--primary); }
         
         .tratamiento-tabla { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.85rem; }
         .tratamiento-tabla td { padding: 10px 8px; border-bottom: 1px solid #EEE; }
-        .tratamiento-tabla tr:last-child td { border-bottom: none; }
         .bold { font-weight: 700; color: var(--text-main); }
         
-        footer { text-align: center; padding: 15px; font-size: 0.75rem; color: var(--text-muted); border-top: 1px solid #EEE; margin-top: auto; line-height: 1.5; background: #FAFACA; }
+        footer { text-align: center; padding: 15px; font-size: 0.75rem; color: var(--text-muted); border-top: 1px solid #EEE; margin-top: auto; line-height: 1.5; background: #FAFAFA; }
     </style>
 </head>
 <body>
@@ -75,11 +69,10 @@
     <header>
         <svg class="zoonosis-icon" width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M10 17C10 18.6569 8.65685 20 7 20C5.34315 20 4 18.6569 4 17M10 17C10 15.3431 11.3431 14 13 14M10 17L13 14M4 17C4 15.3431 5.34315 14 7 14M4 17L7 14M7 14C7 11.7909 8.79086 10 11 10M13 14C15.2091 14 17 12.2091 17 10M13 14L17 10M11 10C13.2091 10 15 8.20914 15 6M11 10L15 6M11 10C9.34315 10 8 11.3431 8 13M15 6C15 4.34315 13.6569 3 12 3C10.3431 3 9 4.34315 9 6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M19 19M17 17L21 21M17 21L21 17" stroke="#90CAF9" stroke-width="1.5" stroke-linecap="round"/>
         </svg>
         <div style="font-size: 1.6rem; font-weight: 800; letter-spacing: 1.5px;">MEISTER</div>
         <div style="font-size: 0.7rem; opacity: 0.8; text-transform: uppercase; letter-spacing: 1px; margin-top: 2px;">
-            Vigilancia Epidemiológica de Rabia
+            Vigilancia Epidemiológica de Rabia | Protocolo 2024
         </div>
     </header>
 
@@ -116,7 +109,7 @@
                 <select id="a-estado" onchange="handleAnimalLogic()">
                     <option value="">Seleccione...</option>
                     <option value="Vivo">Vivo</option>
-                    <option value="Muerto">Muerto</option>
+                    <option value="Muerto">Muerto / Sacrificado</option>
                     <option value="Desconocido">Desconocido</option>
                 </select>
 
@@ -131,7 +124,7 @@
 
                 <div id="note-observable" class="info-note">
                     ⚠️ <b>Criterios de Observación:</b><br>
-                    Válido solo si el animal está en casco urbano, se conocen datos del dueño y un técnico de salud puede realizar las visitas de seguimiento.
+                    Animal en casco urbano, dueño identificado y seguimiento técnico posible.
                 </div>
             </div>
             <button class="btn btn-primary" onclick="validateInfoScreen()">Siguiente</button>
@@ -184,13 +177,11 @@
 
             <div class="card">
                 <p id="res-conducta" style="white-space: pre-line; font-size: 0.85rem; margin-bottom: 15px; color: var(--text-muted);"></p>
-                
                 <div class="tetanos-note">
-                    <b style="text-transform: uppercase;">💉 Prevención de Tétanos:</b><br>
-                    • <b>Refuerzo:</b> Heridas sucias si pasaron >5 años; limpias si pasaron >10 años.<br>
-                    • <b>Esquema Incompleto/Desconocido:</b> Iniciar 3 dosis (día 0, mes y 6 meses).<br>
-                    • <b>Gestantes >20 sem:</b> Vacunar con <b>Tdap</b> (si no la ha recibido).<br>
-                    • <b>Gestantes <20 sem:</b> Recibir <b>Td</b>.
+                    <b>💉 PREVENCIÓN DE TÉTANOS:</b><br>
+                    • <b>Refuerzo:</b> Heridas sucias >5 años; limpias >10 años.<br>
+                    • <b>Sin esquema:</b> 3 dosis (0, 1 y 6 meses).<br>
+                    • <b>Gestantes >20 sem:</b> Tdap | <b><20 sem:</b> Td.
                 </div>
             </div>
 
@@ -202,7 +193,7 @@
     <footer>
         <b>Meister App</b> &copy; 2026<br>
         Desarrollado por: <b>Andres Rodriguez Cardona</b><br>
-        Gestión de Salud Pública - En honor a Joseph Meister (1885)
+        En honor a Joseph Meister (1885)
     </footer>
 </div>
 
@@ -280,6 +271,7 @@
         const peso = parseFloat(document.getElementById('p-peso').value);
         const fechaBase = document.getElementById('p-fecha').value;
         const comorbilidad = document.getElementById('p-comorbilidad').value;
+        const estadoAnimal = document.getElementById('a-estado').value;
 
         if(!sitio) { alert("Seleccione localización"); return; }
         if(!fechaBase) { alert("Seleccione fecha de consulta"); return; }
@@ -293,12 +285,18 @@
         let requiereVacuna = false;
         let requiereSuero = false;
 
+        // LÓGICA DE CLASIFICACIÓN AJUSTADA
         if (["6", "7", "8", "10"].includes(selectedSpecies)) {
+            // Silvestres siempre Grave
             expGrave = true; requiereVacuna = true; requiereSuero = true;
         } else if (selectedSpecies === "1" || selectedSpecies === "2") {
-            if (ubicacion === "Observable") {
+            // AJUSTE SOLICITADO: Si está muerto o desconocido es SIEMPRE Grave
+            if (estadoAnimal === "Muerto" || estadoAnimal === "Desconocido") {
+                expGrave = true; requiereVacuna = true; requiereSuero = true;
+            } else if (ubicacion === "Observable") {
                 expGrave = false; requiereVacuna = false; requiereSuero = false;
             } else {
+                // Vivo pero Perdido: Se evalúa gravedad por tipo de lesión
                 if (prof === "Superficial" && tipo === "Unica" && ["3", "4", "5"].includes(sitio)) {
                     expGrave = false; requiereVacuna = true; requiereSuero = false;
                 } else {
@@ -318,7 +316,7 @@
                               <tr><td>Dosis 3:</td><td class="bold">${addDays(fechaBase, 3)}</td></tr>
                               <tr><td>Dosis 7:</td><td class="bold">${addDays(fechaBase, 7)}</td></tr>
                               <tr><td>Dosis 14:</td><td class="bold">${addDays(fechaBase, 14)}</td></tr>`;
-            if (comorbilidad === "1") htmlFechas += `<tr><td>Dosis 21 (Inmuno):</td><td class="bold">${addDays(fechaBase, 21)}</td></tr>`;
+            if (comorbilidad === "1") htmlFechas += `<tr><td>Dosis 21:</td><td class="bold">${addDays(fechaBase, 21)}</td></tr>`;
             document.getElementById('tabla-fechas').innerHTML = htmlFechas;
         } else {
             resBox.innerText = "NO ES EXPOSICIÓN";
@@ -337,7 +335,7 @@
             document.getElementById('card-suero').style.display = "none";
         }
 
-        document.getElementById('res-conducta').innerText = expGrave ? "• Suero + Vacuna esquema completo.\n• Lavado exhaustivo de herida." : (requiereVacuna ? "• Vacunación esquema completo.\n• No requiere suero." : "• Observación del animal por 10 días.\n• Lavado de herida.");
+        document.getElementById('res-conducta').innerText = expGrave ? "• Suero + Vacuna esquema completo.\n• Lavado exhaustivo de herida." : (requiereVacuna ? "• Vacunación esquema completo.\n• Lavado de herida." : "• Observación del animal por 10 días.\n• Lavado de herida.");
         
         goTo('screen-result');
     }
@@ -347,17 +345,12 @@
         const clasificacion = document.getElementById('res-tipo').innerText;
         const animal = speciesList.find(s => s.id === selectedSpecies).name;
         const suero = document.getElementById('card-suero').style.display === "block" ? `\n*Suero:* ${document.getElementById('suero-ui').innerText} (${document.getElementById('suero-frascos').innerText} frascos)` : "";
-        
         let fechas = "\n*Cronograma Vacunas:*";
-        document.querySelectorAll('#tabla-fechas tr').forEach(tr => {
-            fechas += `\n- ${tr.innerText.replace('\t', ': ')}`;
-        });
-
-        const notaTetanos = `%0A%0A*RECOMENDACIÓN TÉTANOS:*%0A- Valorar refuerzo (>5 años sucia, >10 limpia).%0A- Gestantes >20 sem: Tdap.`;
+        document.querySelectorAll('#tabla-fechas tr').forEach(tr => { fechas += `\n- ${tr.innerText.replace('\t', ': ')}`; });
+        const notaTetanos = `%0A%0A*RECOMENDACIÓN TÉTANOS:*%0A- Valorar refuerzo (>5 años sucia, >10 limpia).`;
 
         const phone = "573116366677"; 
-        const mensaje = `*MEISTER%20-%20REPORTE%20DE%20RABIA*%0A*Paciente:*%20${nombre}%0A*Agresor:*%20${animal}%0A*Clasificación:*%20${clasificacion}${suero}${fechas}${notaTetanos}%0A%0A_Generado%20por:%20Andres%20Rodriguez_`;
-        
+        const mensaje = `*MEISTER%20-%20REPORTE*%0A*Paciente:*%20${nombre}%0A*Agresor:*%20${animal}%0A*Clasificación:*%20${clasificacion}${suero}${fechas}${notaTetanos}`;
         window.open(`https://wa.me/${phone}?text=${mensaje}`, '_blank');
     }
 </script>

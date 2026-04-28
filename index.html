@@ -49,7 +49,7 @@
         .result-box { padding: 15px; border-radius: 8px; font-weight: bold; text-align: center; margin-bottom: 15px; font-size: 1.1rem; letter-spacing: 1px; }
         
         .especie-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .radio-btn { border: 2px solid #EEE; padding: 15px 10px; border-radius: 8px; text-align: center; cursor: pointer; background: white; font-weight: 600; transition: all 0.2s; color: var(--text-muted); }
+        .radio-btn { border: 2px solid #EEE; padding: 15px 10px; border-radius: 8px; text-align: center; cursor: pointer; background: white; font-weight: 600; transition: all 0.2s; color: var(--text-muted); font-size: 0.9rem; }
         .radio-btn.selected { background: #E3F2FD; color: var(--accent); border-color: var(--accent); }
         
         .info-note { background: #FFFDE7; padding: 12px; border-radius: 8px; font-size: 0.8rem; color: #7F0000; border-left: 4px solid #FBC02D; margin-top: -10px; margin-bottom: 15px; display: none; line-height: 1.4; }
@@ -61,6 +61,7 @@
         .bold { font-weight: 700; color: var(--text-main); }
         
         footer { text-align: center; padding: 15px; font-size: 0.75rem; color: var(--text-muted); border-top: 1px solid #EEE; margin-top: auto; line-height: 1.5; background: #FAFAFA; }
+        #counter-display { font-weight: bold; color: var(--accent); }
     </style>
 </head>
 <body>
@@ -124,7 +125,7 @@
 
                 <div id="note-observable" class="info-note">
                     ⚠️ <b>Criterios de Observación:</b><br>
-                    Animal en casco urbano, dueño identificado y con numero celular, que garantice seguimiento  por técnico de salud.
+                    Animal en casco urbano, dueño identificado y con número celular, que garantice seguimiento por técnico de salud.
                 </div>
             </div>
             <button class="btn btn-primary" onclick="validateInfoScreen()">Siguiente</button>
@@ -193,7 +194,7 @@
     <footer>
         <b>Meister App</b> &copy; 2026<br>
         Desarrollado por: <b>Andres Rodriguez Cardona</b><br>
-        Epidemiologo
+        Epidemiólogo | Usos: <span id="counter-display">...</span>
     </footer>
 </div>
 
@@ -203,8 +204,15 @@
         {id: "1", name: "Perro"}, {id: "2", name: "Gato"},
         {id: "6", name: "Murciélago"}, {id: "7", name: "Zorro"},
         {id: "8", name: "Mico"}, {id: "3", name: "Bovino"},
-        {id: "10", name: "Otros Silv."}
+        {id: "11", name: "Porcino"}, {id: "12", name: "Ovino/Cap."},
+        {id: "13", name: "Grd. Roedor"}, {id: "10", name: "Otros Silv."}
     ];
+
+    // Lógica del Contador de Visitas
+    fetch('https://api.countapi.xyz/hit/meister-app-arc/visits')
+    .then(res => res.json())
+    .then(data => { document.getElementById('counter-display').innerText = data.value; })
+    .catch(() => { document.getElementById('counter-display').innerText = "Activo"; });
 
     document.getElementById('p-fecha').valueAsDate = new Date();
     const grid = document.getElementById('species-options');
@@ -285,25 +293,22 @@
         let requiereVacuna = false;
         let requiereSuero = false;
 
-        // LÓGICA DE CLASIFICACIÓN AJUSTADA
-        if (["6", "7", "8", "10"].includes(selectedSpecies)) {
-            // Silvestres siempre Grave
+        // LÓGICA DE CLASIFICACIÓN (Silvestres, Producción y Grandes Roedores siempre Grave)
+        if (["6", "7", "8", "10", "3", "11", "12", "13"].includes(selectedSpecies)) {
             expGrave = true; requiereVacuna = true; requiereSuero = true;
         } else if (selectedSpecies === "1" || selectedSpecies === "2") {
-            // AJUSTE SOLICITADO: Si está muerto o desconocido es SIEMPRE Grave
             if (estadoAnimal === "Muerto" || estadoAnimal === "Desconocido") {
                 expGrave = true; requiereVacuna = true; requiereSuero = true;
             } else if (ubicacion === "Observable") {
                 expGrave = false; requiereVacuna = false; requiereSuero = false;
             } else {
-                // Vivo pero Perdido: Se evalúa gravedad por tipo de lesión
                 if (prof === "Superficial" && tipo === "Unica" && ["3", "4", "5"].includes(sitio)) {
                     expGrave = false; requiereVacuna = true; requiereSuero = false;
                 } else {
                     expGrave = true; requiereVacuna = true; requiereSuero = true;
                 }
             }
-        } else { expGrave = true; requiereVacuna = true; requiereSuero = true; }
+        }
 
         const resBox = document.getElementById('res-tipo');
         if (requiereVacuna) {

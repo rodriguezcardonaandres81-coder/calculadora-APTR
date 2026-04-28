@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MEISTER - Vigilancia de Rabia | Andres Rodriguez Cardona</title>
+    <style>
+        :root { 
+            --primary: #1A237E; 
+            --accent: #2196F3;  
+            --success: #2E7D32; 
+            --warning: #F57C00; 
+            --danger: #C62828;  
+            --bg: #F0F2F5; 
+            --card: #FFFFFF; 
+            --text-main: #333;
+            --text-muted: #666;
+        }
+        
+        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg); margin: 0; display: flex; justify-content: center; min-height: 100vh; color: var(--text-main); }
+        
+        #app-container { width: 100%; max-width: 450px; background: var(--card); display: flex; flex-direction: column; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-radius: 16px; overflow: hidden; margin: 10px 0; }
+        
+        header { background-color: var(--primary); color: white; padding: 20px; text-align: center; border-bottom: 4px solid var(--accent); }
+        
+        .zoonosis-icon { margin-bottom: 10px; opacity: 0.9; }
+        
+        .content { padding: 15px 20px; flex-grow: 1; }
+        .screen { display: none; }
+        .active { display: block; animation: fadeIn 0.3s; }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .card { background: var(--card); padding: 18px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #EEE; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        
+        label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.85rem; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        input, select { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #CCC; border-radius: 8px; box-sizing: border-box; font-size: 16px; color: var(--text-main); transition: border-color 0.2s; }
+        input:focus, select:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1); }
+        
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; color: white; margin-bottom: 10px; transition: background-color 0.2s, transform 0.1s; text-transform: uppercase; letter-spacing: 1px; }
+        .btn:active { transform: translateY(1px); }
+        
+        .btn-primary { background-color: var(--accent); }
+        .btn-success { background-color: var(--success); }
+        .btn-danger { background-color: var(--danger); }
+        .btn-back { background-color: #757575; margin-top: 5px; }
+        
+        .result-box { padding: 15px; border-radius: 8px; font-weight: bold; text-align: center; margin-bottom: 15px; font-size: 1.1rem; letter-spacing: 1px; }
+        
+        .especie-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .radio-btn { border: 2px solid #EEE; padding: 15px 10px; border-radius: 8px; text-align: center; cursor: pointer; background: white; font-weight: 600; transition: all 0.2s; color: var(--text-muted); font-size: 0.9rem; }
+        .radio-btn.selected { background: #E3F2FD; color: var(--accent); border-color: var(--accent); }
+        
+        .info-note { background: #FFFDE7; padding: 12px; border-radius: 8px; font-size: 0.8rem; color: #7F0000; border-left: 4px solid #FBC02D; margin-top: -10px; margin-bottom: 15px; display: none; line-height: 1.4; }
+        
+        .tetanos-note { background: #E8EAF6; padding: 15px; border-radius: 8px; font-size: 0.8rem; color: #1A237E; border-left: 4px solid var(--primary); line-height: 1.5; margin-top: 10px; }
+        
+        .tratamiento-tabla { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.85rem; }
+        .tratamiento-tabla td { padding: 10px 8px; border-bottom: 1px solid #EEE; }
+        .bold { font-weight: 700; color: var(--text-main); }
+        
+        footer { text-align: center; padding: 15px; font-size: 0.75rem; color: var(--text-muted); border-top: 1px solid #EEE; margin-top: auto; line-height: 1.5; background: #FAFAFA; }
+        #counter-display { font-weight: bold; color: var(--accent); }
+    </style>
+</head>
+<body>
+
+<div id="app-container">
+    <header>
+        <svg class="zoonosis-icon" width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10 17C10 18.6569 8.65685 20 7 20C5.34315 20 4 18.6569 4 17M10 17C10 15.3431 11.3431 14 13 14M10 17L13 14M4 17C4 15.3431 5.34315 14 7 14M4 17L7 14M7 14C7 11.7909 8.79086 10 11 10M13 14C15.2091 14 17 12.2091 17 10M13 14L17 10M11 10C13.2091 10 15 8.20914 15 6M11 10L15 6M11 10C9.34315 10 8 11.3431 8 13M15 6C15 4.34315 13.6569 3 12 3C10.3431 3 9 4.34315 9 6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <div style="font-size: 1.6rem; font-weight: 800; letter-spacing: 1.5px;">MEISTER</div>
+        <div style="font-size: 0.7rem; opacity: 0.8; text-transform: uppercase; letter-spacing: 1px; margin-top: 2px;">
+            Vigilancia Epidemiológica de Rabia
+        </div>
+    </header>
+
+    <div class="content">
+        <div id="screen-patient" class="screen active">
+            <div class="card">
+                <label>Nombre del Paciente</label>
+                <input type="text" id="p-nombre" placeholder="Nombre completo">
+                <label>Fecha de Consulta</label>
+                <input type="date" id="p-fecha">
+                <label>¿Presenta Comorbilidad? (Inmunosupresión)</label>
+                <select id="p-comorbilidad">
+                    <option value="2">No</option>
+                    <option value="1">Si</option>
+                </select>
+                <label>Peso del Paciente (Kg)</label>
+                <input type="number" id="p-peso" placeholder="Ej: 70">
+            </div>
+            <button class="btn btn-primary" onclick="goTo('screen-species')">Siguiente</button>
+        </div>
+
+        <div id="screen-species" class="screen">
+            <div class="card">
+                <label style="margin-bottom: 15px;">Especie Agresora</label>
+                <div class="especie-grid" id="species-options"></div>
+            </div>
+            <button class="btn btn-primary" onclick="handleSpeciesNext()">Siguiente</button>
+            <button class="btn btn-back" onclick="goTo('screen-patient')">Atrás</button>
+        </div>
+
+        <div id="screen-info" class="screen">
+            <div class="card">
+                <label>Estado del animal al momento de la consulta</label>
+                <select id="a-estado" onchange="handleAnimalLogic()">
+                    <option value="">Seleccione...</option>
+                    <option value="Vivo">Vivo</option>
+                    <option value="Muerto">Muerto / Sacrificado</option>
+                    <option value="Desconocido">Desconocido</option>
+                </select>
+
+                <div id="wrapper-condicion" style="display:none;">
+                    <label>Condición del Animal</label>
+                    <select id="a-ubicacion" onchange="handleAnimalLogic()">
+                        <option value="">Seleccione...</option>
+                        <option value="Observable">Observable (Conocido)</option>
+                        <option value="Perdido">Perdido / Desconocido</option>
+                    </select>
+                </div>
+
+                <div id="note-observable" class="info-note">
+                    ⚠️ <b>Criterios de Observación:</b><br>
+                    Animal en casco urbano, dueño identificado y con número celular, que garantice seguimiento por técnico de salud.
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="validateInfoScreen()">Siguiente</button>
+            <button class="btn btn-back" onclick="goTo('screen-species')">Atrás</button>
+        </div>
+
+        <div id="screen-lesion" class="screen">
+            <div class="card">
+                <label>Tipo de Lesión</label>
+                <select id="l-tipo">
+                    <option value="Unica">Única</option>
+                    <option value="Multiple">Múltiple</option>
+                    <option value="Lamedura">Lamedura mucosa</option>
+                </select>
+                <label>Profundidad</label>
+                <select id="l-profundidad">
+                    <option value="Superficial">Superficial</option>
+                    <option value="Profunda">Profunda</option>
+                </select>
+                <label>Localización</label>
+                <select id="l-sitio">
+                    <option value="">Seleccione...</option>
+                    <option value="1">Cabeza / Cara / Cuello</option>
+                    <option value="2">Manos / Dedos / Pies</option>
+                    <option value="3">Tronco</option>
+                    <option value="4">Miembros Superiores</option>
+                    <option value="5">Miembros Inferiores</option>
+                    <option value="6">Genitales</option>
+                </select>
+            </div>
+            <button class="btn btn-danger" onclick="calculate()">CALCULAR TRATAMIENTO</button>
+            <button class="btn btn-back" onclick="handleLesionBack()">Atrás</button>
+        </div>
+
+        <div id="screen-result" class="screen">
+            <div id="res-tipo" class="result-box"></div>
+            
+            <div class="card" id="card-vacunacion">
+                <label style="color: var(--accent); border-bottom: 2px solid #E3F2FD; padding-bottom: 5px;">Esquema de Vacunación</label>
+                <table class="tratamiento-tabla" id="tabla-fechas"></table>
+            </div>
+
+            <div class="card" id="card-suero" style="display:none;">
+                <label style="color: var(--danger); border-bottom: 2px solid #FFEBEE; padding-bottom: 5px;">Suero Antirrábico</label>
+                <table class="tratamiento-tabla">
+                    <tr><td>Dosis Total:</td><td class="bold" id="suero-ui">--</td></tr>
+                    <tr><td>Frascos (1000 UI):</td><td class="bold" id="suero-frascos">--</td></tr>
+                </table>
+            </div>
+
+            <div class="card">
+                <p id="res-conducta" style="white-space: pre-line; font-size: 0.85rem; margin-bottom: 15px; color: var(--text-muted);"></p>
+                <div class="tetanos-note">
+                    <b>💉 PREVENCIÓN DE TÉTANOS:</b><br>
+                    • <b>1 Refuerzo:</b> Heridas sucias >5 años; limpias >10 años.<br>
+                    • <b>Sin esquema:</b> 3 dosis (0, 1 y 6 meses).<br>
+                    • <b>Gestantes >20 sem:</b> Tdap | <b><20 sem:</b> Td.
+                </div>
+            </div>
+
+            <button class="btn btn-success" onclick="sendWhatsApp()">Enviar Reporte</button>
+            <button class="btn btn-primary" onclick="location.reload()">Nueva Evaluación</button>
+        </div>
+    </div>
+
+    <footer>
+        <b>Meister App</b> &copy; 2026<br>
+        Desarrollado por: <b>Andres Rodriguez Cardona</b><br>
+        Epidemiólogo | Usos: <span id="counter-display">...</span>
+    </footer>
+</div>
+
+<script>
+    let selectedSpecies = "1";
+    const speciesList = [
+        {id: "1", name: "Perro"}, {id: "2", name: "Gato"},
+        {id: "6", name: "Murciélago"}, {id: "7", name: "Zorro"},
+        {id: "8", name: "Mico"}, {id: "3", name: "Bovino"},
+        {id: "11", name: "Porcino"}, {id: "12", name: "Ovino/Cap."},
+        {id: "13", name: "Grd. Roedor"}, {id: "10", name: "Otros Silv."}
+    ];
+
+    // Lógica del Contador de Visitas
+    fetch('https://api.countapi.xyz/hit/meister-app-arc/visits')
+    .then(res => res.json())
+    .then(data => { document.getElementById('counter-display').innerText = data.value; })
+    .catch(() => { document.getElementById('counter-display').innerText = "Activo"; });
+
+    document.getElementById('p-fecha').valueAsDate = new Date();
+    const grid = document.getElementById('species-options');
+    speciesList.forEach(sp => {
+        const div = document.createElement('div');
+        div.className = `radio-btn ${sp.id === "1" ? 'selected' : ''}`;
+        div.innerText = sp.name;
+        div.onclick = () => {
+            document.querySelectorAll('.radio-btn').forEach(b => b.classList.remove('selected'));
+            div.classList.add('selected');
+            selectedSpecies = sp.id;
+        };
+        grid.appendChild(div);
+    });
+
+    function handleAnimalLogic() {
+        const estado = document.getElementById('a-estado').value;
+        const wrapperCondicion = document.getElementById('wrapper-condicion');
+        const ubicacionSelect = document.getElementById('a-ubicacion');
+        const nota = document.getElementById('note-observable');
+
+        if (estado === "Vivo") {
+            wrapperCondicion.style.display = "block";
+            nota.style.display = (ubicacionSelect.value === "Observable") ? "block" : "none";
+        } else {
+            wrapperCondicion.style.display = "none";
+            ubicacionSelect.value = "Perdido";
+            nota.style.display = "none";
+        }
+    }
+
+    function validateInfoScreen() {
+        const estado = document.getElementById('a-estado').value;
+        const ubicacion = document.getElementById('a-ubicacion').value;
+        if (!estado) { alert("Seleccione el estado del animal"); return; }
+        if (estado === "Vivo" && !ubicacion) { alert("Seleccione la condición del animal"); return; }
+        goTo('screen-lesion');
+    }
+
+    function goTo(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+        window.scrollTo(0,0);
+    }
+
+    function handleSpeciesNext() { (selectedSpecies === "1" || selectedSpecies === "2") ? goTo('screen-info') : goTo('screen-lesion'); }
+    function handleLesionBack() { (selectedSpecies === "1" || selectedSpecies === "2") ? goTo('screen-info') : goTo('screen-species'); }
+
+    function formatDate(date) {
+        const d = new Date(date);
+        d.setMinutes(d.getMinutes() + d.getTimezoneOffset());
+        return d.toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    }
+
+    function addDays(date, days) {
+        const result = new Date(date);
+        result.setMinutes(result.getMinutes() + result.getTimezoneOffset());
+        result.setDate(result.getDate() + days);
+        return formatDate(result);
+    }
+
+    function calculate() {
+        const sitio = document.getElementById('l-sitio').value;
+        const peso = parseFloat(document.getElementById('p-peso').value);
+        const fechaBase = document.getElementById('p-fecha').value;
+        const comorbilidad = document.getElementById('p-comorbilidad').value;
+        const estadoAnimal = document.getElementById('a-estado').value;
+
+        if(!sitio) { alert("Seleccione localización"); return; }
+        if(!fechaBase) { alert("Seleccione fecha de consulta"); return; }
+        if(isNaN(peso) || peso <= 0) { alert("Ingrese un peso válido"); return; }
+
+        const ubicacion = (selectedSpecies === "1" || selectedSpecies === "2") ? document.getElementById('a-ubicacion').value : "Perdido";
+        const tipo = document.getElementById('l-tipo').value;
+        const prof = document.getElementById('l-profundidad').value;
+        
+        let expGrave = false;
+        let requiereVacuna = false;
+        let requiereSuero = false;
+
+        // LÓGICA DE CLASIFICACIÓN (Silvestres, Producción y Grandes Roedores siempre Grave)
+        if (["6", "7", "8", "10", "3", "11", "12", "13"].includes(selectedSpecies)) {
+            expGrave = true; requiereVacuna = true; requiereSuero = true;
+        } else if (selectedSpecies === "1" || selectedSpecies === "2") {
+            if (estadoAnimal === "Muerto" || estadoAnimal === "Desconocido") {
+                expGrave = true; requiereVacuna = true; requiereSuero = true;
+            } else if (ubicacion === "Observable") {
+                expGrave = false; requiereVacuna = false; requiereSuero = false;
+            } else {
+                if (prof === "Superficial" && tipo === "Unica" && ["3", "4", "5"].includes(sitio)) {
+                    expGrave = false; requiereVacuna = true; requiereSuero = false;
+                } else {
+                    expGrave = true; requiereVacuna = true; requiereSuero = true;
+                }
+            }
+        }
+
+        const resBox = document.getElementById('res-tipo');
+        if (requiereVacuna) {
+            resBox.innerText = expGrave ? "EXPOSICIÓN GRAVE" : "EXPOSICIÓN LEVE";
+            resBox.style.backgroundColor = expGrave ? "var(--danger)" : "var(--warning)";
+            resBox.style.color = "white";
+            document.getElementById('card-vacunacion').style.display = "block";
+            
+            let htmlFechas = `<tr><td>Dosis 0:</td><td class="bold">${formatDate(fechaBase)}</td></tr>
+                              <tr><td>Dosis 3:</td><td class="bold">${addDays(fechaBase, 3)}</td></tr>
+                              <tr><td>Dosis 7:</td><td class="bold">${addDays(fechaBase, 7)}</td></tr>
+                              <tr><td>Dosis 14:</td><td class="bold">${addDays(fechaBase, 14)}</td></tr>`;
+            if (comorbilidad === "1") htmlFechas += `<tr><td>Dosis 21:</td><td class="bold">${addDays(fechaBase, 21)}</td></tr>`;
+            document.getElementById('tabla-fechas').innerHTML = htmlFechas;
+        } else {
+            resBox.innerText = "NO ES EXPOSICIÓN";
+            resBox.style.backgroundColor = "var(--success)";
+            resBox.style.color = "white";
+            document.getElementById('card-vacunacion').style.display = "none";
+        }
+
+        if (requiereSuero) {
+            document.getElementById('card-suero').style.display = "block";
+            const uiTotal = peso * 40;
+            const frascos = Math.ceil(uiTotal / 1000);
+            document.getElementById('suero-ui').innerText = uiTotal + " UI";
+            document.getElementById('suero-frascos').innerText = frascos + " Frascos";
+        } else {
+            document.getElementById('card-suero').style.display = "none";
+        }
+
+        document.getElementById('res-conducta').innerText = expGrave ? "• Suero + Vacuna esquema completo.\n• Lavado exhaustivo de herida." : (requiereVacuna ? "• Vacunación esquema completo.\n• Lavado de herida." : "• Observación del animal por 10 días.\n• Lavado de herida.");
+        
+        goTo('screen-result');
+    }
+
+    function sendWhatsApp() {
+        const nombre = document.getElementById('p-nombre').value || "No registrado";
+        const clasificacion = document.getElementById('res-tipo').innerText;
+        const animal = speciesList.find(s => s.id === selectedSpecies).name;
+        const suero = document.getElementById('card-suero').style.display === "block" ? `\n*Suero:* ${document.getElementById('suero-ui').innerText} (${document.getElementById('suero-frascos').innerText} frascos)` : "";
+        let fechas = "\n*Cronograma Vacunas:*";
+        document.querySelectorAll('#tabla-fechas tr').forEach(tr => { fechas += `\n- ${tr.innerText.replace('\t', ': ')}`; });
+        const notaTetanos = `%0A%0A*RECOMENDACIÓN TÉTANOS:*%0A- Valorar refuerzo (>5 años sucia, >10 limpia).`;
+
+        const phone = "573125472659"; 
+        const mensaje = `*MEISTER%20-%20REPORTE*%0A*Paciente:*%20${nombre}%0A*Agresor:*%20${animal}%0A*Clasificación:*%20${clasificacion}${suero}${fechas}${notaTetanos}`;
+        window.open(`https://wa.me/${phone}?text=${mensaje}`, '_blank');
+    }
+</script>
+</body>
+</html>

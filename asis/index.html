@@ -61,7 +61,6 @@
         .bold { font-weight: 700; color: var(--text-main); }
         
         footer { text-align: center; padding: 15px; font-size: 0.75rem; color: var(--text-muted); border-top: 1px solid #EEE; margin-top: auto; line-height: 1.5; background: #FAFAFA; }
-        #counter-display { font-weight: bold; color: var(--accent); }
     </style>
 </head>
 <body>
@@ -84,7 +83,7 @@
                 <input type="text" id="p-nombre" placeholder="Nombre completo">
                 <label>Fecha de Consulta</label>
                 <input type="date" id="p-fecha">
-                <label>¿Presenta Comorbilidad? (Inmunosupresión)</label>
+                <label>¿Inmunosupresión? (VIH, Quimio, etc)</label>
                 <select id="p-comorbilidad">
                     <option value="2">No</option>
                     <option value="1">Si</option>
@@ -110,22 +109,22 @@
                 <select id="a-estado" onchange="handleAnimalLogic()">
                     <option value="">Seleccione...</option>
                     <option value="Vivo">Vivo</option>
-                    <option value="Muerto">Muerto / Sacrificado</option>
-                    <option value="Desconocido">Desconocido</option>
+                    <option value="Muerto">Muerto / Sacrificado / Con Rabia</option>
+                    <option value="Desconocido">Desconocido / Huyó</option>
                 </select>
 
                 <div id="wrapper-condicion" style="display:none;">
                     <label>Condición del Animal</label>
                     <select id="a-ubicacion" onchange="handleAnimalLogic()">
                         <option value="">Seleccione...</option>
-                        <option value="Observable">Observable (Conocido)</option>
-                        <option value="Perdido">Perdido / Desconocido</option>
+                        <option value="Observable">Observable (Urbano / Ubicable)</option>
+                        <option value="Perdido">No Observable (Callejero / Perdido)</option>
                     </select>
                 </div>
 
                 <div id="note-observable" class="info-note">
                     ⚠️ <b>Criterios de Observación:</b><br>
-                    Animal en casco urbano, dueño identificado y con número celular, que garantice seguimiento por técnico de salud.
+                    Animal en casco urbano, dueño identificado que garantice seguimiento por 10 días.
                 </div>
             </div>
             <button class="btn btn-primary" onclick="validateInfoScreen()">Siguiente</button>
@@ -138,12 +137,12 @@
                 <select id="l-tipo">
                     <option value="Unica">Única</option>
                     <option value="Multiple">Múltiple</option>
-                    <option value="Lamedura">Lamedura mucosa</option>
+                    <option value="Lamedura">Lamedura mucosa / Piel lesionada</option>
                 </select>
                 <label>Profundidad</label>
                 <select id="l-profundidad">
                     <option value="Superficial">Superficial</option>
-                    <option value="Profunda">Profunda</option>
+                    <option value="Profunda">Profunda (Traspasa dermis)</option>
                 </select>
                 <label>Localización</label>
                 <select id="l-sitio">
@@ -171,18 +170,18 @@
             <div class="card" id="card-suero" style="display:none;">
                 <label style="color: var(--danger); border-bottom: 2px solid #FFEBEE; padding-bottom: 5px;">Suero Antirrábico</label>
                 <table class="tratamiento-tabla">
-                    <tr><td>Dosis Total:</td><td class="bold" id="suero-ui">--</td></tr>
-                    <tr><td>Frascos (1000 UI):</td><td class="bold" id="suero-frascos">--</td></tr>
+                    <tr><td>Dosis Total (40 UI/kg):</td><td class="bold" id="suero-ui">--</td></tr>
+                    <tr><td>Frascos aprox (1000 UI):</td><td class="bold" id="suero-frascos">--</td></tr>
                 </table>
             </div>
 
             <div class="card">
                 <p id="res-conducta" style="white-space: pre-line; font-size: 0.85rem; margin-bottom: 15px; color: var(--text-muted);"></p>
                 <div class="tetanos-note">
-                    <b>💉 PREVENCIÓN DE TÉTANOS:</b><br>
-                    • <b>1 Refuerzo:</b> Heridas sucias >5 años; limpias >10 años.<br>
-                    • <b>Sin esquema:</b> 3 dosis (0, 1 y 6 meses).<br>
-                    • <b>Gestantes >20 sem:</b> Tdap | <b><20 sem:</b> Td.
+                    <b>💉 PREVENCIÓN DE TÉTANOS Y HERIDA:</b><br>
+                    • Lavado exhaustivo con agua y jabón (15 min).<br>
+                    • 1 Refuerzo Td: Heridas sucias >5 años; limpias >10 años.<br>
+                    • No suturar la herida (salvo necesidad estética funcional).
                 </div>
             </div>
 
@@ -194,7 +193,7 @@
     <footer>
         <b>Meister App</b> &copy; 2026<br>
         Desarrollado por: <b>Andres Rodriguez Cardona</b><br>
-        Epidemiólogo | Usos: <span id="counter-display">...</span>
+        Epidemiólogo | Estado: <span style="color: var(--success)">Activo</span>
     </footer>
 </div>
 
@@ -207,12 +206,6 @@
         {id: "11", name: "Porcino"}, {id: "12", name: "Ovino/Cap."},
         {id: "13", name: "Grd. Roedor"}, {id: "10", name: "Otros Silv."}
     ];
-
-    // Lógica del Contador de Visitas
-    fetch('https://api.countapi.xyz/hit/meister-app-arc/visits')
-    .then(res => res.json())
-    .then(data => { document.getElementById('counter-display').innerText = data.value; })
-    .catch(() => { document.getElementById('counter-display').innerText = "Activo"; });
 
     document.getElementById('p-fecha').valueAsDate = new Date();
     const grid = document.getElementById('species-options');
@@ -258,8 +251,13 @@
         window.scrollTo(0,0);
     }
 
-    function handleSpeciesNext() { (selectedSpecies === "1" || selectedSpecies === "2") ? goTo('screen-info') : goTo('screen-lesion'); }
-    function handleLesionBack() { (selectedSpecies === "1" || selectedSpecies === "2") ? goTo('screen-info') : goTo('screen-species'); }
+    function handleSpeciesNext() { 
+        (selectedSpecies === "1" || selectedSpecies === "2") ? goTo('screen-info') : goTo('screen-lesion'); 
+    }
+    
+    function handleLesionBack() { 
+        (selectedSpecies === "1" || selectedSpecies === "2") ? goTo('screen-info') : goTo('screen-species'); 
+    }
 
     function formatDate(date) {
         const d = new Date(date);
@@ -276,40 +274,47 @@
 
     function calculate() {
         const sitio = document.getElementById('l-sitio').value;
-        const peso = parseFloat(document.getElementById('p-peso').value);
+        const peso = parseFloat(document.getElementById('p-weight') || document.getElementById('p-peso').value);
         const fechaBase = document.getElementById('p-fecha').value;
         const comorbilidad = document.getElementById('p-comorbilidad').value;
         const estadoAnimal = document.getElementById('a-estado').value;
-
-        if(!sitio) { alert("Seleccione localización"); return; }
-        if(!fechaBase) { alert("Seleccione fecha de consulta"); return; }
-        if(isNaN(peso) || peso <= 0) { alert("Ingrese un peso válido"); return; }
-
-        const ubicacion = (selectedSpecies === "1" || selectedSpecies === "2") ? document.getElementById('a-ubicacion').value : "Perdido";
+        const ubicacion = document.getElementById('a-ubicacion').value;
         const tipo = document.getElementById('l-tipo').value;
         const prof = document.getElementById('l-profundidad').value;
-        
+
+        if(!sitio) { alert("Seleccione localización"); return; }
+        if(!fechaBase) { alert("Seleccione fecha"); return; }
+        if(isNaN(peso) || peso <= 0) { alert("Ingrese peso válido"); return; }
+
         let expGrave = false;
         let requiereVacuna = false;
         let requiereSuero = false;
 
-        // LÓGICA DE CLASIFICACIÓN (Silvestres, Producción y Grandes Roedores siempre Grave)
+        // 1. ANIMALES SILVESTRES Y DE PRODUCCIÓN (Siempre Grave)
         if (["6", "7", "8", "10", "3", "11", "12", "13"].includes(selectedSpecies)) {
             expGrave = true; requiereVacuna = true; requiereSuero = true;
-        } else if (selectedSpecies === "1" || selectedSpecies === "2") {
-            if (estadoAnimal === "Muerto" || estadoAnimal === "Desconocido") {
-                expGrave = true; requiereVacuna = true; requiereSuero = true;
-            } else if (ubicacion === "Observable") {
+        } 
+        // 2. PERROS Y GATOS
+        else {
+            if (estadoAnimal === "Vivo" && ubicacion === "Observable") {
+                // Caso: Observable y sano. Solo lavar y vigilar 10 días.
                 expGrave = false; requiereVacuna = false; requiereSuero = false;
             } else {
-                if (prof === "Superficial" && tipo === "Unica" && ["3", "4", "5"].includes(sitio)) {
+                // Caso: Animal Desconocido, Muerto o Se perdió.
+                // Clasificamos por naturaleza de la herida
+                const esLocalizacionRiesgo = ["1", "2", "6"].includes(sitio); // Cabeza, manos, genitales
+                
+                if (tipo === "Unica" && prof === "Superficial" && !esLocalizacionRiesgo) {
+                    // LEVE: Única, superficial, en tronco o miembros.
                     expGrave = false; requiereVacuna = true; requiereSuero = false;
                 } else {
+                    // GRAVE: Múltiples, profundas o en zonas de riesgo.
                     expGrave = true; requiereVacuna = true; requiereSuero = true;
                 }
             }
         }
 
+        // MOSTRAR RESULTADOS
         const resBox = document.getElementById('res-tipo');
         if (requiereVacuna) {
             resBox.innerText = expGrave ? "EXPOSICIÓN GRAVE" : "EXPOSICIÓN LEVE";
@@ -340,8 +345,12 @@
             document.getElementById('card-suero').style.display = "none";
         }
 
-        document.getElementById('res-conducta').innerText = expGrave ? "• Suero + Vacuna esquema completo.\n• Lavado exhaustivo de herida." : (requiereVacuna ? "• Vacunación esquema completo.\n• Lavado de herida." : "• Observación del animal por 10 días.\n• Lavado de herida.");
-        
+        let conducta = "";
+        if (!requiereVacuna) conducta = "• Lavado exhaustivo de la herida.\n• Observación del animal por 10 días.\n• Si el animal cambia de estado, reevaluar.";
+        else if (expGrave) conducta = "• Suero Antirrábico + Vacuna.\n• Lavado de herida.\n• Reportar a Vigilancia Epidemiológica.";
+        else conducta = "• Vacunación esquema completo (Leve).\n• Lavado de herida.\n• No requiere suero.";
+
+        document.getElementById('res-conducta').innerText = conducta;
         goTo('screen-result');
     }
 
@@ -349,14 +358,12 @@
         const nombre = document.getElementById('p-nombre').value || "No registrado";
         const clasificacion = document.getElementById('res-tipo').innerText;
         const animal = speciesList.find(s => s.id === selectedSpecies).name;
-        const suero = document.getElementById('card-suero').style.display === "block" ? `\n*Suero:* ${document.getElementById('suero-ui').innerText} (${document.getElementById('suero-frascos').innerText} frascos)` : "";
-        let fechas = "\n*Cronograma Vacunas:*";
-        document.querySelectorAll('#tabla-fechas tr').forEach(tr => { fechas += `\n- ${tr.innerText.replace('\t', ': ')}`; });
-        const notaTetanos = `%0A%0A*RECOMENDACIÓN TÉTANOS:*%0A- Valorar refuerzo (>5 años sucia, >10 limpia).`;
+        const suero = document.getElementById('card-suero').style.display === "block" ? `\n*Suero:* ${document.getElementById('suero-ui').innerText}` : "";
+        let fechas = "\n*Cronograma:*";
+        document.querySelectorAll('#tabla-fechas tr').forEach(tr => { fechas += `\n- ${tr.innerText}`; });
 
-        const phone = "573116366677"; 
-        const mensaje = `*MEISTER%20-%20REPORTE*%0A*Paciente:*%20${nombre}%0A*Agresor:*%20${animal}%0A*Clasificación:*%20${clasificacion}${suero}${fechas}${notaTetanos}`;
-        window.open(`https://wa.me/${phone}?text=${mensaje}`, '_blank');
+        const mensaje = `*MEISTER - REPORTE*%0A*Paciente:* ${nombre}%0A*Agresor:* ${animal}%0A*Clasificación:* ${clasificacion}${suero}${fechas}`;
+        window.open(`https://wa.me/573116366677?text=${mensaje}`, '_blank');
     }
 </script>
 </body>

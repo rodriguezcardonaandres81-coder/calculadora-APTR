@@ -354,7 +354,7 @@
         document.querySelectorAll('#tabla-fechas tr').forEach(tr => { fechas += `\n- ${tr.innerText.replace('\t', ': ')}`; });
         const notaTetanos = `%0A%0A*RECOMENDACIÓN TÉTANOS:*%0A- Valorar refuerzo (>5 años sucia, >10 limpia).`;
 
-        const phone = "573125472659"; 
+        const phone = "573115988646"; 
         const mensaje = `*MEISTER%20-%20REPORTE*%0A*Paciente:*%20${nombre}%0A*Agresor:*%20${animal}%0A*Clasificación:*%20${clasificacion}${suero}${fechas}${notaTetanos}`;
         window.open(`https://wa.me/${phone}?text=${mensaje}`, '_blank');
     }
